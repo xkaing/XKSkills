@@ -1,39 +1,60 @@
 # AGENTS.md - XKSkills
 
-This file provides guidelines for agentic coding agents operating in the XKSkills repository.
+本文档为在 XKSkills 仓库中运行的智能编码代理提供操作指南。
 
-## Project Overview
+## 项目概述
 
-XKSkills is a personal collection of Agent Skills - reusable prompt templates that guide AI agents to perform specific tasks. Skills are stored as Markdown files with YAML frontmatter.
+XKSkills 是一个个人收藏的 Agent Skills 集合——可重用的提示模板，用于指导 AI 代理执行特定任务。Skills 以 Markdown 文件形式存储，包含 YAML 头部信息。部分 Skills 包含辅助脚本（Python/JavaScript）用于自动化。
 
-## Project Structure
+## 项目结构
 
 ```
 XKSkills/
-├── skills/
-│   └── *.md              # Skill definition files
-├── AGENTS.md             # This file
-├── README.md             # Project documentation
-└── LICENSE.txt           # MIT License
+├── skills/                    # Skill 定义文件
+│   ├── <skill-name>/
+│   │   ├── SKILL.md          # Skill 主定义
+│   │   ├── scripts/          # 辅助脚本 (Python, JS)
+│   │   ├── examples/         # 使用示例
+│   │   ├── reference/        # 文档参考
+│   │   └── themes/           # 主题文件 (设计类 Skills)
+├── AGENTS.md                  # 本文件
+├── README.md                  # 项目文档
+└── LICENSE.txt                # MIT 许可证
 ```
 
-## Build / Test Commands
+## 构建 / 测试命令
 
-This is a documentation/repository project - there is no build system, tests, or linting to run.
+这是一个文档/仓库项目。各个 Skills 可能包含自己的测试脚本。
 
-- **No build commands required** - Skills are plain Markdown files
-- **No tests** - Manual verification by reading skill content
-- **No linting** - YAML frontmatter should be valid YAML
+### Skill 脚本 (Python)
 
-## Skill File Format
+- **语法检查**: `python -m py_compile <file.py>`
+- **运行脚本**: `python skills/<skill>/scripts/<script>.py <args>`
+- **安装依赖**: 检查 `skills/<skill>/requirements.txt` 是否存在
 
-Each skill is a Markdown file with YAML frontmatter. Follow this exact structure:
+### Skill 脚本 (TypeScript/Node.js)
+
+- **构建**: `npm run build` (在包含 package.json 的 skill 目录下)
+- **类型检查**: `npx tsc --noEmit`
+- **运行**: `node dist/<file>.js` 或 `npx ts-node src/<file>.ts`
+
+### MCP 服务器测试
+
+- **MCP Inspector**: `npx @modelcontextprotocol/inspector`
+
+### 代码检查
+
+- **Python**: 使用 `ruff check .` 或 `flake8` (如果配置了)
+- **TypeScript**: 使用 `npm run lint` 或 `npx eslint .` (如果配置了)
+
+## Skill 文件格式
+
+每个 Skill 是包含 YAML 头部信息的 Markdown 文件。请遵循以下格式：
 
 ```yaml
 ---
 name: skill-name
-description: Brief description of what this skill does (1-2 sentences)
-license: Complete terms in LICENSE.txt
+description: 简要描述该 Skill 的功能 (1-2 句话)
 tags:
   - tag1
   - tag2
@@ -41,86 +62,89 @@ version: "1.0.0"
 author: XKSkills
 ---
 
-# Skill content in Markdown format
+# Skill 内容 (Markdown 格式)
 ```
 
-### Required Frontmatter Fields
+### 必需的头部字段
 
-| Field | Description | Example |
+| 字段 | 描述 | 示例 |
 |-------|-------------|---------|
-| `name` | Unique skill identifier (kebab-case) | `frontend-design` |
-| `description` | One-sentence summary for skill selection | `Create distinctive...` |
-| `license` | License reference | `Complete terms in LICENSE.txt` |
-| `tags` | Array of searchable tags | `- frontend`, `- ui` |
-| `version` | Semantic version string | `"1.0.0"` |
-| `author` | Author name | `XKSkills` |
+| `name` | 唯一标识符 (kebab-case) | `frontend-design` |
+| `description` | 一句话摘要，用于选择 Skill | `Create distinctive...` |
+| `tags` | 可搜索标签数组 | `- frontend`, `- ui` |
+| `version` | 语义化版本字符串 | `"1.0.0"` |
+| `author` | 作者名称 | `XKSkills` |
 
-### Optional Frontmatter Fields
+## 代码风格指南
 
-| Field | Description |
-|-------|-------------|
-| `instruction` | Detailed instructions (alternative to body content) |
-| `examples` | Array of usage examples |
-| `requires` | Dependencies or required context |
+### YAML 头部
 
-## Code Style Guidelines
+- 使用 2 空格缩进 (不要使用 Tab)
+- 版本字符串需要加引号: `"1.0.0"` 而不是 `1.0.0`
+- 名称使用 kebab-case: `skill-name` 而不是 `skillName`
+- 标签数组使用连字符前缀，2 空格缩进
 
-Since skills are written in Markdown/YAML, follow these conventions:
+### Markdown 内容
 
-### YAML Frontmatter
+- 使用 ATX 风格标题 (`#`, `##`, `###`)
+- 最大行长度: 100 字符
+- 使用带语言标识的代码块
 
-- Use 2 spaces for indentation (no tabs)
-- Quote version strings: `"1.0.0"` not `1.0.0`
-- Use kebab-case for names: `skill-name` not `skillName`
-- Tags array uses hyphen prefix with 2-space indent
+### Python 脚本 (Skills 内)
 
-### Markdown Content
+**导入顺序**: 标准库、第三方库、本地模块。
 
-- Use ATX-style headers (`#`, `##`, `###`)
-- Maximum line length: 100 characters
-- Use fenced code blocks with language identifiers
-- Use bullet lists for enumerations
-- Use emphasis (`**bold**`, `*italic*`) sparingly
+**类型提示**: 为所有函数参数使用类型提示。优先使用现代联合语法 (`X | None`)。
 
-### Naming Conventions
+**命名**: 函数/变量用 `snake_case`，类用 `PascalCase`，常量用 `SCREAMING_SNAKE_CASE`。
 
-- **Skill filenames**: `kebab-case.md` (e.g., `frontend-design.md`)
-- **Skill names**: kebab-case
-- **Tags**: lowercase, kebab-case if multiple words
+**格式**: 4 空格缩进，最大行长度 100，使用尾随逗号。
 
-### General Guidelines
+**错误处理**: 对于可能失败的操作，返回元组 `(result, error_message)`。
 
-1. **Be concise** - Skills should be focused and actionable
-2. **Avoid agent-specific references** - Use "the agent" instead of "Claude", "ChatGPT", etc.
-3. **Include examples** - Show, don't just tell
-4. **Version bump** - Increment version when updating skills (follow semver)
-5. **Write in English** - Skill content should be in English for broad compatibility
+### JavaScript/TypeScript 脚本
 
-## Git Workflow
+**命名**: 变量/函数用 `camelCase`，类用 `PascalCase`。
 
-1. Create a new branch for each skill addition/modification
-2. Use descriptive commit messages:
+**类型**: 尽可能使用 TypeScript 而不是纯 JavaScript。
+
+**格式**: 2 空格缩进，如配置了 ESLint/Prettier 则使用。
+
+## 命名约定
+
+- **Skill 文件名**: `kebab-case.md` (例如 `frontend-design.md`)
+- **Skill 名称**: kebab-case
+- **标签**: 小写，多个单词用 kebab-case
+
+## 一般指南
+
+1. **保持简洁** - Skills 应聚焦且可操作
+2. **避免代理特定引用** - 使用"the agent"而不是"Claude"、"ChatGPT"等
+3. **包含示例** - 演示而不是仅说明
+4. **版本更新** - 更新 Skills 时递增版本 (遵循 semver)
+5. **使用英文** - Skill 内容应使用英文以确保广泛兼容性
+
+## Git 工作流
+
+1. 每次添加/修改 Skill 创建新分支
+2. 使用描述性的提交信息:
    - `Add new skill: <skill-name>`
    - `Update skill: <skill-name> to v1.1.0`
    - `Fix: <skill-name> - description of fix`
-3. Pull request before merging to main
-4. Never commit sensitive information
+3. 合并到 main 前创建 Pull Request
+4. 永不提交敏感信息
 
-## Adding a New Skill
+## 添加新 Skill
 
-1. Create file: `skills/<skill-name>.md`
-2. Add required frontmatter with proper formatting
-3. Write skill content in Markdown
-4. Update `README.md` to list the new skill
-5. Commit and push following Git Workflow
+1. 创建目录: `skills/<skill-name>/`
+2. 创建包含必需头部和内容的 `SKILL.md`
+3. 如需要，在 `scripts/` 添加辅助脚本
+4. 如需要 Python 依赖，添加 `requirements.txt`
+5. 更新根目录 `README.md` 列出新 Skill
+6. 按 Git 工作流提交并推送
 
-## Error Handling
+## 错误处理
 
-- **YAML syntax errors**: Use a YAML validator to check frontmatter
-- **Broken links**: Verify all internal links work
-- **Missing fields**: Ensure all required frontmatter fields are present
-
-## Related Files
-
-- `README.md` - Project documentation and skill listing
-- `LICENSE.txt` - MIT License full text
+- **YAML 语法错误**: 使用 YAML 验证器检查头部
+- **链接失效**: 验证所有内部链接有效
+- **字段缺失**: 确保所有必需的头部字段存在
